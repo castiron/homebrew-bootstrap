@@ -5,7 +5,9 @@ upstream <%= server_name %> {
 server {
   access_log <%= log_dir %>/nginx.access.log combined;
   listen 80;
+  listen [::]:80;
   listen 443 ssl;
+  listen [::]:443 ssl;
 
   server_name <%= name %>.<%= tld.strip %>;
   root <%= root %>/public;

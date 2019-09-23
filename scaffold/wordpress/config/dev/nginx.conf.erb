@@ -7,7 +7,9 @@ map $http_origin $cors_header {
 server {
   access_log <%= log_dir %>/nginx.access.log combined;
   listen 80;
+  listen [::]:80;
   listen 443 ssl;
+  listen [::]:443 ssl;
 
   server_name .<%= name %>.<%= tld.strip %>;
   root <%= root %>/web;
@@ -84,4 +86,3 @@ server {
   rewrite ^/wp-admin/ /wp/wp-admin/index.php last;
 
 }
-
