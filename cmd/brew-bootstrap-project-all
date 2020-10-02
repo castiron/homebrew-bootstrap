@@ -17,3 +17,13 @@ brew list coreutils >/dev/null 2>&1 || brew install coreutils
 
 # Needed for warewolf
 brew list rsync >/dev/null 2>&1 || brew install rsync
+
+echo "==> Ensuring PHP dependencies…"
+
+# phpenv build dependencies
+brew list zlib  >/dev/null 2>&1 || brew install zlib
+brew list bzip2 >/dev/null 2>&1 || brew install bzip2
+brew list readline >/dev/null 2>&1 || brew install readline
+brew list libedit >/dev/null 2>&1 || brew install libedit
+brew list libiconv >/dev/null 2>&1 || brew install libiconv
+brew list tidy-html5 >/dev/null 2>&1 || brew install tidy-html5
