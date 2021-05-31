@@ -1,0 +1,14 @@
+#!/bin/bash
+
+cd "$(dirname "$0")/.."
+
+BACKUP_FILE=backup-`date +"%m-%d-%y-%s"`.tar
+SQL_FILE=dump.sql
+
+DB_DATABASE=$(grep DB_DATABASE api/.env | xargs)
+DB_DATABASE=${DB_DATABASE#*=}
+
+pg_dump $DB_DATABASE -O -x --clean > $SQL_FILE
+tar -cf $BACKUP_FILE $SQL_FILE api/assets
+rm $SQL_FILE
+echo $BACKUP_FILE

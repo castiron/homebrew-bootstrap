@@ -1,0 +1,38 @@
+#!/bin/bash
+
+cd "$(dirname "$0")/.."
+
+RESTORE_ARCHIVE_PATH=$1
+RESTORE_ARCHIVE_FILE=$(basename $RESTORE_ARCHIVE_PATH)
+
+mkdir -p tmp-restore
+cp $RESTORE_ARCHIVE_PATH tmp-restore/
+cd tmp-restore
+tar -xf $RESTORE_ARCHIVE_FILE
+cd ..
+
+if [ -f tmp-restore/dump.sql ]
+then
+  mv tmp-restore/dump.sql data/pg/dump.sql
+  docker-compose exec -T pg dropdb -U pg pg
+  docker-compose exec -T pg createdb -U pg pg
+  docker-compose exec -T pg psql -U pg --file /srv/data/dump.sql pg
+  rm data/pg/dump.sql
+fi
+
+if [ -d tmp-restore/api/assets ]
+then
+  rm -rf api/assets
+  mv tmp-restore/api/assets api/
+fi
+
+rm -rf tmp-restore
+
+if [ -z `docker ps -q --no-trunc | grep $(docker compose ps -q craft)` ]; then
+  echo "Craft container is not running, so project config was not updated."
+  echo "Once the container is running, execute this command:"
+  echo "docker-compose exec craft php craft project-config/write"
+else
+  echo "Updating Craft project config"
+  docker-compose exec -T craft php craft project-config/write
+fi

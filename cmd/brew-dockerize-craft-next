@@ -1,0 +1,14 @@
+#!/bin/bash
+
+#GIT_IGNORE_LINE='docker-compose/mysql/data'
+#GIT_IGNORE_FILE='.gitignore'
+#if [ -f "$GIT_IGNORE_FILE" ]; then
+#  grep -qF -- "$GIT_IGNORE_LINE" "$GIT_IGNORE_FILE" || echo "$GIT_IGNORE_LINE" >> "$GIT_IGNORE_FILE"
+#fi
+
+brew scaffold docker_october
+
+
+echo ""
+echo "==> See the updated README for next steps!"
+echo ""

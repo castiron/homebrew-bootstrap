@@ -1,0 +1,3 @@
+#!/bin/bash
+
+docker compose exec craft php craft $@

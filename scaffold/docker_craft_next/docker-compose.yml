@@ -1,0 +1,62 @@
+services:
+  craft:
+    build:
+      context: ./api
+      dockerfile: ./Dockerfile
+    restart: unless-stopped
+    working_dir: /var/www/html
+    depends_on:
+      - pg
+    environment:
+      DB_SERVER: pg
+      DB_PORT: 5432
+      DB_DATABASE: pg
+      DB_USER: pg
+      DB_PASSWORD: pg
+    volumes:
+      - ./api:/var/www/html
+      - ./docker/craft/php.ini:/usr/local/etc/php/conf.d/custom.ini
+      - ./docker/craft/php-fpm.conf:/usr/local/etc/php-fpm.conf
+  nextjs:
+    build:
+      context: ./client
+      dockerfile: Dockerfile
+    depends_on:
+      - craft
+    ports:
+      - "3000:3000"
+      - "6006:6006"
+    volumes:
+      - ./client:/usr/src/app:delegated
+      - ./client/package.json:/usr/src/package.json
+      - ./client/yarn.lock:/usr/src/yarn.lock
+      - /usr/src/app/node_modules
+      - /usr/src/app/.next
+    environment:
+      - NEXT_PUBLIC_API_PRIVATE_URL
+      - NEXT_PUBLIC_API_URL
+    restart: unless-stopped
+  pg:
+    image: postgres:13.3-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_PASSWORD: pg
+      POSTGRES_USER: pg
+      POSTGRES_DB: pg
+    volumes:
+      - ./data/pg:/srv/data
+  nginx:
+    image: nginx:alpine
+    restart: unless-stopped
+    depends_on:
+      - craft
+    ports:
+      - "8000:80"
+    volumes:
+      - ./docker/nginx:/etc/nginx/conf.d
+      - ./api/web:/var/www/html/web
+      - ./api/assets:/var/www/html/assets
+
+volumes:
+  pg-data:
+    driver: local

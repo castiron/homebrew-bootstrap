@@ -1,0 +1,6 @@
+#!/bin/bash
+
+docker compose down --remove-orphans --rmi local --volumes
+
+# The --volumes flag is not working as it should, so putting this here to make sure
+docker volume rm ofb_pg-data
