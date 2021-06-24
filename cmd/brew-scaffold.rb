@@ -31,6 +31,12 @@ if type == "october" || type =="docker_october"
   end
 end
 
+if type == "docker_craft_next"
+  unless File.exists?("api/composer.json") && File.exists?("client/package.json")
+    abort "The current directory does not appear to be the root of a Craft/Next project"
+  end
+end
+
 
 source_dir = File.join(template_dir, type)
 source_root_path = Pathname.new(source_dir)
