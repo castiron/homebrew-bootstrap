@@ -4,7 +4,6 @@ class PhpBuild < Formula
   url "https://github.com/php-build/php-build", :using => :git, :revision => "0a1e81349dcd5044922034b76688dc7966594f5e"
   head "https://github.com/php-build/php-build.git"
   version "1.3"
-  bottle :unneeded
 
   depends_on "autoconf" => :recommended
   depends_on "pkg-config" => :recommended
