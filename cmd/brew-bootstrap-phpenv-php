@@ -7,6 +7,7 @@ set -e
 
 echo "==> Ensuring PHP is present"
 
+
 if [ "$1" = "--debug" ]; then
   shift
   PRINT_DEBUG="1"
@@ -86,10 +87,45 @@ if ! phpenv version-name &>/dev/null; then
   fi
 
   PATH="/usr/local/opt/bison/bin:$PATH"
+
   HOMEBREW_PREFIX="$(brew --prefix)"
-  brew install zlib bzip2 readline libedit libiconv libzip tidy-html5 postgresql
-  export CONFIGURE_OPTS="--with-tidy=$(brew --prefix tidy-html5) --with-zlib-dir=$(brew --prefix zlib) --with-bz2=$(brew --prefix bzip2) --with-readline=$(brew --prefix readline) --with-libedit=$(brew --prefix libedit) --with-iconv=$(brew --prefix libiconv) --with-libzip=$(brew --prefix libzip) --with-pdo-pgsql --with-pgsql --with-openssl=$(brew --prefix openssl)"
-  phpenv install "$PHP_DEFINITION"
+
+  brew install zlib bzip2 readline libedit libiconv libzip tidy-html5 postgresql openssl@1.1 libjpeg libpng libpq
+
+  export OPENSSL_CFLAGS="-I$(brew --prefix openssl@1.1)/include" 
+
+  export OPENSSL_LIBS="-L$(brew --prefix openssl@1.1)/lib -lcrypto -lssl" 
+
+  export CFLAGS="-DU_DEFINE_FALSE_AND_TRUE=1 -Wno-error=implicit-function-declaration" 
+
+  export CXXFLAGS="-std=c++11 -DU_DEFINE_FALSE_AND_TRUE=1 -DU_USING_ICU_NAMESPACE=1"
+
+  export CONFIGURE_OPTS="--with-tidy=$(brew --prefix tidy-html5) \
+--with-zlib-dir=$(brew --prefix zlib) \
+--with-bz2=$(brew --prefix bzip2) \
+--with-readline=$(brew --prefix readline) \
+--with-libedit=$(brew --prefix libedit) \
+--with-iconv=$(brew --prefix libiconv) \
+--with-libzip=$(brew --prefix libzip) \
+--with-pdo-pgsql=$(brew --prefix postgresql) \
+--with-pgsql=$(brew --prefix postgresql) \
+--with-openssl-dir=$(brew --prefix openssl@1.1) \
+--with-jpeg-dir=$(brew --prefix libjpeg) \
+--with-png-dir=$(brew --prefix libpng)"
+
+#if [ $PHP_DEFINITION == "7.2.24" ]; then
+#  patch -u /var/tmp/php-build/source/7.2.24/ext/intl/breakiterator/codepointiterator_internal.cpp -i $(brew --prefix)/Library/Taps/castiron/homebrew-bootstrap/patch/php/7.2.24/codepointiterator_internal.cpp.patch
+#  patch -u /var/tmp/php-build/source/7.2.24/ext/intl/breakiterator/codepointiterator_internal.h -i $(brew --prefix)/Library/Taps/castiron/homebrew-bootstrap/patch/php/7.2.24/codepointiterator_internal.h.patch
+#fi
+
+
+  { 
+    phpenv install "$PHP_DEFINITION"
+  } || { 
+    echo "phpenv install failed"
+    phpenv uninstall "$PHP_DEFINITION"
+    abort "PHP never installs correctly."
+  }  
 fi
 
 if [ "$(phpenv exec php --version)" != "$(php --version)" ]; then

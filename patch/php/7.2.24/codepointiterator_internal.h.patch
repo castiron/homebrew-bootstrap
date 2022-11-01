@@ -1,0 +1,14 @@
+--- codepointiterator_internal.h	2022-11-01 13:27:39
++++ codepointiterator_internal.h-new	2022-11-01 13:30:57
+@@ -39,7 +39,11 @@
+
+ 		virtual ~CodePointBreakIterator();
+
+-		virtual UBool operator==(const BreakIterator& that) const;
++#if U_ICU_VERSION_MAJOR_NUM >= 70
++		virtual bool operator==(const BreakIterator& that) const;
++#else
++ 		virtual UBool operator==(const BreakIterator& that) const;
++#endif
+
+ 		virtual CodePointBreakIterator* clone(void) const;

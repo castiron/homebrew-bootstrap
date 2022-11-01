@@ -1,0 +1,15 @@
+--- codepointiterator_internal.cpp-orig	2022-11-01 13:32:48
++++ codepointiterator_internal.cpp-new	2022-11-01 13:30:00
+@@ -75,7 +75,11 @@
+ 	clearCurrentCharIter();
+ }
+
+-UBool CodePointBreakIterator::operator==(const BreakIterator& that) const
++#if U_ICU_VERSION_MAJOR_NUM >= 70
++bool CodePointBreakIterator::operator==(const BreakIterator& that) const
++#else
++ UBool CodePointBreakIterator::operator==(const BreakIterator& that) const
++#endif
+ {
+ 	if (typeid(*this) != typeid(that)) {
+ 		return FALSE;
