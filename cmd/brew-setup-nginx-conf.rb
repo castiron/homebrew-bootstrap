@@ -77,7 +77,7 @@ end
 
 brewfile = <<~EOS
   brew "nginx", restart_service: true
-  brew "launchdns", restart_service: true
+  brew "ciclaunchdns", restart_service: true
 EOS
 
 started_services = false
@@ -88,14 +88,15 @@ unless system "echo '#{brewfile}' | brew bundle check --file=- >/dev/null"
   started_services = true
 end
 
-unless File.exist? "#{brew_dir}/etc/resolver/#{tld}"
-  puts "Adding .#{tld} domain resolver; you may need to restart your network interface."
-  resolver = <<~EOS
-    nameserver 127.0.0.1
-    port 55353
-  EOS
-  File.write("#{brew_dir}/etc/resolver/#{tld}", resolver)
-end
+# Doing this in the ciclaunchdns formula now.
+# unless File.exist? "#{brew_dir}/etc/resolver/#{tld}"
+#   puts "Adding .#{tld} domain resolver; you may need to restart your network interface."
+#   resolver = <<~EOS
+#     nameserver 127.0.0.1
+#     port 55353
+#   EOS
+#   File.write("#{brew_dir}/etc/resolver/#{tld}", resolver)
+# end
 
 if `readlink /etc/resolver 2>/dev/null`.chomp != "#{brew_dir}/etc/resolver"
   unless system "sudo -n true >/dev/null"
