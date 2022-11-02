@@ -12,6 +12,8 @@ else
   https_port = 8443
 end
 
+brew_dir = `brew --prefix`.strip
+puts "Home brew is in #{brew_dir}"
 
 name = ARGV.shift
 root = ARGV.shift || "."
@@ -67,13 +69,11 @@ exit unless RUBY_PLATFORM.include? "darwin"
 strap_url = ENV["HOMEBREW_STRAP_URL"]
 strap_url ||= "https://strap.githubapp.com"
 
-unless File.exist? "/usr/local/bin/brew"
+unless File.exist? "#{brew_dir}/bin/brew"
   abort <<~EOS
-    Error: Homebrew is not in /usr/local. Install it by running Strap:
-      #{strap_url}
+    Error: Homebrew is not installed. Install it.
 EOS
 end
-
 
 brewfile = <<~EOS
   brew "nginx", restart_service: true
@@ -82,29 +82,28 @@ EOS
 
 started_services = false
 unless system "echo '#{brewfile}' | brew bundle check --file=- >/dev/null"
-  puts "Installing *.#{tld} dependencies:"
-  unless system "echo '#{brewfile}' | brew bundle  --no-upgrade --file=-"
-    abort "Error: install *.#{tld} dependencies with brew bundle!"
-  end
+  puts "Installing *.#{tld} dependencies."
+  system "brew install nginx"
+  system "brew install launchdns"
   started_services = true
 end
 
-unless File.exist? "/usr/local/etc/resolver/#{tld}"
+unless File.exist? "#{brew_dir}/etc/resolver/#{tld}"
   puts "Adding .#{tld} domain resolver; you may need to restart your network interface."
   resolver = <<~EOS
     nameserver 127.0.0.1
     port 55353
   EOS
-  File.write("/usr/local/etc/resolver/#{tld}", resolver)
+  File.write("#{brew_dir}/etc/resolver/#{tld}", resolver)
 end
 
-if `readlink /etc/resolver 2>/dev/null`.chomp != "/usr/local/etc/resolver"
+if `readlink /etc/resolver 2>/dev/null`.chomp != "#{brew_dir}/etc/resolver"
   unless system "sudo -n true >/dev/null"
     puts "Asking for your password to setup *.#{tld}:"
   end
   system "sudo rm -rf /etc/resolver"
-  unless system "sudo ln -sf /usr/local/etc/resolver /etc/resolver"
-    abort "Error: failed to symlink /usr/local/etc/resolver to /etc/resolver!"
+  unless system "sudo ln -sf #{brew_dir}/etc/resolver /etc/resolver"
+    abort "Error: failed to symlink #{brew_dir}/etc/resolver to /etc/resolver!"
   end
 end
 
@@ -120,7 +119,7 @@ if File.exist? "/etc/pf.anchors/dev.strap"
   system "sudo rm -f /Library/LaunchDaemons/dev.strap.pf.plist"
 end
 
-server = "/usr/local/etc/nginx/servers/#{name}"
+server = "#{brew_dir}/etc/nginx/servers/#{name}"
 unless system "ln -sf '#{File.absolute_path(output)}' '#{server}'"
   abort "Error: failed to symlink #{output} to #{server}!"
 end
