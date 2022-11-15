@@ -1,0 +1,51 @@
+#!/usr/bin/env bash
+
+PATH="/usr/local/opt/bison/bin:$PATH"
+
+HOMEBREW_PREFIX="$(brew --prefix)"
+
+# Only install packages if they're not already installed so as to
+# avoid unnecessary upgrades.
+brew list zlib || brew install zlib
+brew list bzip2 || brew install bzip2
+brew list readline || brew install readline
+brew list libedit || brew install libedit
+brew list libiconv || brew install libiconv
+brew list libzip || brew install libzip
+brew list tidy-html5 || brew install tidy-html5
+brew list postgresql@14 || brew install postgresql@14
+brew list openssl@1.1 || brew install openssl@1.1
+brew list libjpeg || brew install libjpeg
+brew list libpng || brew install libpng
+brew list libpq || brew install libpq
+
+brew remove openssl@3
+
+export OPENSSL_CFLAGS="-I$(brew --prefix openssl@1.1)/include"
+export OPENSSL_LIBS="-L$(brew --prefix openssl@1.1)/lib -lcrypto -lssl"
+export CFLAGS="-DU_DEFINE_FALSE_AND_TRUE=1 -Wno-error=implicit-function-declaration"
+export CXXFLAGS="-std=c++11 -DU_DEFINE_FALSE_AND_TRUE=1 -DU_USING_ICU_NAMESPACE=1"
+export CONFIGURE_OPTS="--with-tidy=$(brew --prefix tidy-html5) \
+--with-zlib-dir=$(brew --prefix zlib) \
+--with-bz2=$(brew --prefix bzip2) \
+--with-readline=$(brew --prefix readline) \
+--with-libedit=$(brew --prefix libedit) \
+--with-iconv=$(brew --prefix libiconv) \
+--with-libzip=$(brew --prefix libzip) \
+--with-pdo-pgsql=$(brew --prefix postgresql@14) \
+--with-pgsql=$(brew --prefix postgresql@14) \
+--with-openssl-dir=$(brew --prefix openssl@1.1) \
+--with-jpeg-dir=$(brew --prefix libjpeg) \
+--with-png-dir=$(brew --prefix libpng)"
+
+
+#  patch -u /var/tmp/php-build/source/7.2.24/ext/intl/breakiterator/codepointiterator_internal.cpp -i $(brew --prefix)/Library/Taps/castiron/homebrew-bootstrap/patch/php/7.2.24/codepointiterator_internal.cpp.patch
+#  patch -u /var/tmp/php-build/source/7.2.24/ext/intl/breakiterator/codepointiterator_internal.h -i $(brew --prefix)/Library/Taps/castiron/homebrew-bootstrap/patch/php/7.2.24/codepointiterator_internal.h.patch
+#
+{
+  phpenv install 7.3.33
+} || {
+  echo "phpenv install failed"
+  phpenv uninstall 7.3.33
+  abort "PHP never installs correctly."
+}
