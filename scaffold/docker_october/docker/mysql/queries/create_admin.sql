@@ -1,0 +1,2 @@
+# admin / admin
+INSERT INTO `backend_users` (`id`, `first_name`, `last_name`, `login`, `email`, `password`, `activation_code`, `persist_code`, `reset_password_code`, `permissions`, `is_activated`, `role_id`, `activated_at`, `last_login`, `created_at`, `updated_at`, `is_superuser`) VALUES (1, 'Admin', 'Person', 'admin', 'admin@domain.tld', '$2y$10$if/cUHaPvRNAmt./fqeu7uC1UfvNzsIqnxS54sPR1/KwQ3mw88y3O', NULL, '$2y$10$t/a/dUwZ8u2jYXaRjO9Oh.GzqtSbWjd7n1LMikH9DV8Ti3i4RqeW.', NULL, '', 1, 2, NULL, '2019-02-15 09:37:49', '2018-05-10 16:17:17', '2019-02-15 09:37:49', 1);
