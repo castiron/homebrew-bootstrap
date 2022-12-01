@@ -111,7 +111,8 @@ if ! phpenv version-name &>/dev/null; then
 --with-pgsql=$(brew --prefix postgresql) \
 --with-openssl-dir=$(brew --prefix openssl@1.1) \
 --with-jpeg-dir=$(brew --prefix libjpeg) \
---with-png-dir=$(brew --prefix libpng)"
+--with-png-dir=$(brew --prefix libpng) \
+--disable-mbregex"
 
 #if [ $PHP_DEFINITION == "7.2.24" ]; then
 #  patch -u /var/tmp/php-build/source/7.2.24/ext/intl/breakiterator/codepointiterator_internal.cpp -i $(brew --prefix)/Library/Taps/castiron/homebrew-bootstrap/patch/php/7.2.24/codepointiterator_internal.cpp.patch
