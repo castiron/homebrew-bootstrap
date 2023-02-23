@@ -6,70 +6,100 @@ To setup this project for the first time, begin by eyeballing the Dockerfile in 
 
 Then, follow these steps:
 
+### Initial setup
+1. Clone this repo
+2. `cp .env.example .env`
+3. `script/up`
+4. `script/october/composer install`
+5. `warewolf setup` Refer to the [Warewolf the project](#warewolf-the-project) section below for configuration.
+6. `warewolf pull`
+7. View the frontend at http://localhost:8000
+8. If needed, [create a backend admin](#create-a-backend-admin).
+
+### Start the project
+
+`script/up`
+
+### Stop the project
+
+`script/down`
+
+### Destroy containers for a fresh start
+
+`script/destroy`
+
+### CLI Shortcuts
+
+```
+script/october/artisan [...]
+script/october/composer [...]
+script/node/yarn [...]
 ```
 
-# Setup your .env file
-cp .env.sample .env
-
-# Set OCTOBER_DB_PASSWORD to a random value.
-# Ensure OCTOBER_DB_HOST is set to "database"
-# Set OCTOBER_DB_USERNAME to not root, or don't.
-$EDITOR .env
-
-# Start up the containers. This will take longer the first time because
-# Docker will need to build the October container.
-docker-compose up
-
-# While Docker is running, open a new terminal window to setup october.
-
-# Install PHP dependencies
-docker-compose exec october composer install
-
-# Run database migrations
-docker-compose exec october php artisan october:up
-
-# Make an admin user with username "admin" and password "admin"
-docker exec database /var/lib/queries/run_sql.sh create_admin.sql
-```
-
-Now, visit the site at http://localhost:8000 and hurray, it worked!
-
-#### Other useful commands:
+### Other useful commands
 
 ```
 # Connect to mysql. The database container exposes MySQL on port 8001.
 mysql --host=127.0.0.1 --port=8001 --user=$DB_USER --password $DB_NAME
 
 # Reset a user's password
-docker-compose exec october php artisan october:passwd admin password
-
-# Run an Artisan command
-docker-compose exec october php artisan some-command
+script/october/artisan october:passwd admin password
 
 # Add a node module
-docker-compose exec node yarn add some-module
+script/node/yarn add some-module
 
 # Update a node module
-docker-compose exec node yarn upgrade node-sass
+script/node/yarn upgrade node-sass
 
-# Force rebuild a the October image after changing the Dockerfile
+# Force rebuild the October image after changing the Dockerfile
 docker-compose up --build --force-recreate --no-deps october
 ```
 
-#### Connecting to the database
+### Connecting to the database
 
-With October, we store our database connection information in the .env file in the project root. When the database container starts up, docker will source the .env file. Our docker-compose configuration will pass the October database env vars to the MySQL container. When that container first starts, it will create a database and user based on the variables. All mysql data is stored in docker-compose/mysql/data in your project. If you want to recreate your database, you can remove that directory and recreate your containers.
+With October, we store our database connection information in the .env file in the project root. When the database container starts up, docker will source the .env file. Our docker-compose configuration will pass the October database env vars to the MySQL container. When that container first starts, it will create a database and user based on the variables.
 
-#### Using Warewolf
+### Using Warewolf
 
-To use warewolf, you need to configure it to connect to the datbase running in the local container. For this to work, you will need Warewolf v1.5 or later, as previous versions didn't allow users to configure the mysql port. Your config will look more or less like this:
+Update Warewolf to 0.1.5 if you haven't yet by running `gem update warewolf`. Warewolf has been updated to take a port argument to allow it to work with a database in a running container. Your `.warewolf/config` should look something like this:
 
 ```
-db_name=$OCTOBER_DB_NAME
-db_user=$OCTOBER_DB_USER
-db_pass=$OCTOBER_DB_PASSWORD
-db_host=127.00.1
+remote=castiron@warewolf.cichq.com:warewolf/data/project
+db_name=october
+db_user=username
+db_host=127.0.0.1
 db_port=8001
+db_pass='password'
+```
+The variables above can all be found in the .env file. Be sure to use the 127.0.0.1 IP address for the host. I've seen cases where localhost doesn't resolve properly in this context, not sure why yet.
+
+
+### Create a backend admin
+Make an admin user with username "admin" and password "admin":
+```
+docker exec db /var/lib/queries/run_sql.sh create_admin.sql
 ```
 
-The variables above can all be found in the .env file. Be sure to use the 127.0.0.1 IP address for the host. I've seen cases where localhost doesn't resolve properly in this context, not sure why yet.
+If instead you need or prefer an interactive process, start Tinker with `script/october/artisan tinker` and copy/paste the following into your terminal in sequence:
+```
+$user = Backend\Models\User::create([
+            'email'                 => 'you@castironcoding.com',
+            'login'                 => 'cic',
+            'password'              => 'chu88yhands',
+            'password_confirmation' => 'chu88yhands',
+            'first_name'            => 'firstname',
+            'last_name'             => 'lastname',
+            'permissions'           => ['superuser' => 1],
+            'is_activated'          => true,
+        ]);
+```
+```
+$user->is_superuser = true;
+```
+```
+$user->save();
+```
+```
+exit
+```
+

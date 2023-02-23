@@ -106,6 +106,7 @@ The scaffold command, which currently supports `october`, `rails`, and `typo3` p
 
 ```
 $ brew scaffold october
+$ brew scaffold docker_october
 $ brew scaffold rails
 $ brew scaffold typo3
 $ brew scaffold wordpress

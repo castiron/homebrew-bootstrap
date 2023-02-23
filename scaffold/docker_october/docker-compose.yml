@@ -9,21 +9,14 @@ services:
       dockerfile: Dockerfile
     restart: unless-stopped
     working_dir: /var/www/
-    environment:
-      - SSH_AUTH_SOCK="/run/host-services/ssh-auth.sock"
     volumes:
       - ./:/var/www
-      - /run/host-services/ssh-auth.sock:/run/host-services/ssh-auth.sock:ro
-      - ./docker-compose/october/php.ini:/usr/local/etc/php/conf.d/custom.ini
-      - ./docker-compose/october/php-fpm.conf:/usr/local/etc/php-fpm.conf
-      - ~/.composer/auth.json:/home/october/.composer/auth.json
-    networks:
-      - frontend
-      - backend
+      - ./config/dev/php.ini:/usr/local/etc/php/conf.d/custom.ini
+      - ./config/dev/php-fpm.conf:/usr/local/etc/php-fpm.conf
 
   node:
-    image: node:10.23.2
-    user: node
+    platform: linux/x86_64
+    image: node:12.18.3-alpine
     restart: unless-stopped
     working_dir: /home/node/app
     environment:
@@ -31,13 +24,13 @@ services:
       - PATH=/home/node/app/node_modules/.bin:$PATH
     volumes:
       - ./:/home/node/app
-      - ./docker-compose/node/bin:/home/node/bin
+      - ./docker/bin:/home/node/bin
     ports:
       - "9090:9090"
     command: "/home/node/bin/yarn_install_and_start"
 
-
-  database:
+  db:
+    platform: linux/x86_64
     image: mysql:5.7
     restart: unless-stopped
     ports:
@@ -47,14 +40,13 @@ services:
       MYSQL_ROOT_PASSWORD: ${OCTOBER_DB_PASSWORD}
       MYSQL_PASSWORD: ${OCTOBER_DB_PASSWORD}
       MYSQL_USER: ${OCTOBER_DB_USERNAME}
+      MYSQL_ALLOW_EMPTY_PASSWORD: 1
       SERVICE_TAGS: dev
-      SERVICE_NAME: database
+      SERVICE_NAME: db
     volumes:
-      - ./docker-compose/mysql/mysqld.conf:/etc/mysql/conf.d/mysqld.conf
-      - ./docker-compose/mysql/data:/var/lib/mysql
-      - ./docker-compose/mysql/queries:/var/lib/queries
-    networks:
-      - backend
+      - ./docker/mysql/mysqld.conf:/etc/mysql/conf.d/mysqld.conf
+      - ./docker/mysql/queries:/var/lib/queries
+      - mysql-data:/var/lib/mysql
 
   nginx:
     image: nginx:alpine
@@ -63,13 +55,8 @@ services:
       - "8000:80"
     volumes:
       - .:/var/www
-      - ./docker-compose/nginx:/etc/nginx/conf.d
-    networks:
-      - frontend
-      - backend
+      - ./docker/nginx:/etc/nginx/conf.d
 
-networks:
-  backend:
-    driver: bridge
-  frontend:
-    driver: bridge
+volumes:
+  mysql-data:
+    driver: local
